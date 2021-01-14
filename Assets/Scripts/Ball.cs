@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Mirror;
-using Mirror.Examples.Benchmark;
 using Random = UnityEngine.Random;
 
 public class Ball : NetworkBehaviour
@@ -24,21 +20,25 @@ public class Ball : NetworkBehaviour
         ballSpeed = 4f;
     }
 
+    [Server]
     private void Update()
     {
         BallMovement();
     }
 
+    [Server]
     private void BallMovement()
     {
         transform.position += direction.normalized * (ballSpeed * Time.deltaTime);
     }
 
+    [Server]
     private void OnTriggerEnter2D(Collider2D other)
     {
         BallBounce(other);
     }
 
+    [Server]
     private void BallBounce(Collider2D other)
     {
         Debug.Log("Bounce");

@@ -3,15 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
+using UnityEngine.XR;
 
 public class Player : NetworkBehaviour
 {
     private Vector3 movement = new Vector3();
     [SerializeField] private float speed;
+    private NetworkManager networkManager;
+    private int amountOfPlayers;
 
     private void Start()
     {
         speed = 2f;
+        networkManager = FindObjectOfType<NetworkManager>();
+        transform.Rotate(0, 0, 0);
     }
 
     [Client]
@@ -19,34 +24,31 @@ public class Player : NetworkBehaviour
     {
         if (!hasAuthority) return;
 
-        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow)
-        || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+        CmdMove();
+    }
+    
+    private void CmdMove()
+    {
+        if (netId == 2 || netId == 3)
         {
-            if (transform.rotation.z == 0)
-            {
-                CmdMove("Vertical");
-            }
+            transform.position += new Vector3(0, Input.GetAxisRaw("Vertical"), 0) * (speed * Time.deltaTime);
         }
-
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)
-        || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+        if (netId == 4 || netId == 5)
         {
-            if (transform.rotation.z == -90)
-            {
-                CmdMove("Horizontal");
-            }
+            transform.position += new Vector3(Input.GetAxisRaw("Horizontal"), 0, 0) * (speed * Time.deltaTime);
         }
     }
     
-    private void CmdMove(String movementType)
+    public override void OnStartClient()
     {
-        if (movementType == "Vertical")
+        base.OnStartClient();
+        amountOfPlayers = NetworkServer.connections.Count;
+        
+        if (netId == 4 || netId == 5)
         {
-            transform.position += new Vector3(0, Input.GetAxisRaw(movementType), 0) * (speed * Time.deltaTime);
+            transform.Rotate(0f, 0f, -90f);
         }
-        if (movementType == "Horizontal")
-        {
-            transform.position += new Vector3(Input.GetAxisRaw(movementType), 0, 0) * (speed * Time.deltaTime);
-        }
+        
+        Debug.Log(amountOfPlayers);
     }
 }
